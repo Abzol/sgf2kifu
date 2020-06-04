@@ -7,6 +7,13 @@ COLORS = {
         "B" : "black"
         }
 
+def drawBoard():
+    svg.write('<rect x="0" y="0" width="380" height="380" fill="#ebcc7b" stroke="transparent"/>')
+    svg.write('<rect x="10" y="10" fill="#ebcc7b" stroke="black" stroke-width="2" width="360" height="360"/>')
+    for x in range(17):
+        svg.write('<line x1="10" x2="370" y1="%d" y2="%d" stroke="black"/>' % (30+(x*20), 30+(x*20)))
+        svg.write('<line x1="%d" x2="%d" y1="10" y2="370" stroke="black"/>' % (30+(x*20), 30+(x*20)))
+
 def parseSgf(sgf):
     moves = sgf.read().split(';')[2:]
     out = []
@@ -47,7 +54,7 @@ def renderKos(move, index):
         c = "black"
     svg.write('<text x="%d" y="%d" font-size="11" font-family="sans-serif"\
  dominant-baseline="middle" text-anchor="middle" stroke="%s"\
- fill="%s">%d</text>\n' % (x+40, y, c, c, at))
+ fill="%s">%d</text>\n' % (x+40, y, c, c, at+1))
 
 def parseMove(move, index, kos):
     player, x, y = move
@@ -62,6 +69,7 @@ if __name__ == "__main__":
     with open(sys.argv[2], 'w') as svg:
         with open(sys.argv[1], 'r') as sgf:
             svg.write('<svg width="380" height="500" xmlns="http://www.w3.org/2000/svg">\n')
+            drawBoard()
             played = []
             kifu = parseSgf(sgf)
             kos = []
