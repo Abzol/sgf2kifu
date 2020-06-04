@@ -1,0 +1,57 @@
+#!/usr/bin/python3
+import sys
+
+COLORS = {
+        "W" : "white",
+        "B" : "black"
+        }
+
+def parseSgf(sgf):
+    moves = sgf.read().split(';')[2:]
+    out = []
+    for move in moves:
+        player = COLORS[move[0]]
+        x = ord(move[2].lower()) - ord('a')
+        y = ord(move[3].lower()) - ord('a')
+        out.append((player, x, y))
+    return out
+
+def renderBoard(board):
+    svg.write('<circle cx="%d" cy="%d" r="10" stroke="black" fill="%s"/>' % ((cx*20)+10, (cy*20)+10, player))
+    # swap colors for the text
+    if player == "white":
+        player = "black"
+    else:
+        player = "white"
+    svg.write('<text x="%d" y="%d" font-size="11" font-family="sans-serif"\
+ dominant-baseline="middle" text-anchor="middle" stroke="%s"\
+ fill="%s">%d</text>\n' % ((cx*20)+10, (cy*20)+10, player, player, number))
+
+def renderKos(kos):
+    svg.write('<circle cx="%d" cy="%d" r="10" stroke="black" fill="%s"/>' % (10, 400, player))
+
+def parseMove(move, board, kos, index):
+    player = COLORS[move[0]]
+    x = ord(move[2].lower()) - ord('a')
+    y = ord(move[3].lower()) - ord('a')
+    if ((move[0], x, y, number) not in board):
+    else:
+        on = played.index((move[0], cx, cy))
+        renderBelow(move, number, on)
+    return(move[0], cx, cy)
+
+if __name__ == "__main__":
+    with open(sys.argv[2], 'w') as svg:
+        with open(sys.argv[1], 'r') as sgf:
+            svg.write('<svg width="380" height="380" xmlns="http://www.w3.org/2000/svg">\n')
+            played = []
+            kifu = parseSgf(sgf)
+            board = []
+            kos = []
+            for move, index in enumerate(kifu):
+                parseMove(move, index, board, kos)
+            for move, index in enumerate(board):
+                renderBoard(board)
+            for move, index in enumerate(kos):
+                renderKos(kos)
+            svg.write('</svg>')
