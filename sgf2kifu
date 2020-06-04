@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import sys
+from math import floor
 
 COLORS = {
         "W" : "white",
@@ -16,8 +17,8 @@ def parseSgf(sgf):
         out.append((player, x, y))
     return out
 
-def renderBoard(board):
-    svg.write('<circle cx="%d" cy="%d" r="10" stroke="black" fill="%s"/>' % ((cx*20)+10, (cy*20)+10, player))
+def renderToBoard(player, x, y, index):
+    svg.write('<circle cx="%d" cy="%d" r="10" stroke="black" fill="%s"/>' % ((x*20)+10, (y*20)+10, player))
     # swap colors for the text
     if player == "white":
         player = "black"
@@ -25,33 +26,47 @@ def renderBoard(board):
         player = "white"
     svg.write('<text x="%d" y="%d" font-size="11" font-family="sans-serif"\
  dominant-baseline="middle" text-anchor="middle" stroke="%s"\
- fill="%s">%d</text>\n' % ((cx*20)+10, (cy*20)+10, player, player, number))
+ fill="%s">%d</text>\n' % ((x*20)+10, (y*20)+10, player, player, index))
 
-def renderKos(kos):
-    svg.write('<circle cx="%d" cy="%d" r="10" stroke="black" fill="%s"/>' % (10, 400, player))
+def renderKos(move, index):
+    player, number, color, at = move
+    x = 10 + (80 * (index % 5))
+    y = 400 + (20 * floor(index/5))
+    svg.write('<circle cx="%d" cy="%d" r="10" stroke="black" fill="%s"/>' % (x, y, player))
+    c = "white"
+    if player == "white":
+        c = "black"
+    svg.write('<text x="%d" y="%d" font-size="11" font-family="sans-serif"\
+ dominant-baseline="middle" text-anchor="middle" stroke="%s"\
+ fill="%s">%d</text>' % (x, y, c, c, number))
+    svg.write('<text x="%d" y="%d" font-size="11" font-family="sans-serif"\
+ dominant-baseline="middle" text-anchor="middle">at</text>' % (x+20, y))
+    svg.write('<circle cx="%d" cy="%d" r="10" stroke="black" fill="%s"/>' % (x+40, y, color))
+    c = "white"
+    if color == "white":
+        c = "black"
+    svg.write('<text x="%d" y="%d" font-size="11" font-family="sans-serif"\
+ dominant-baseline="middle" text-anchor="middle" stroke="%s"\
+ fill="%s">%d</text>\n' % (x+40, y, c, c, at))
 
-def parseMove(move, board, kos, index):
-    player = COLORS[move[0]]
-    x = ord(move[2].lower()) - ord('a')
-    y = ord(move[3].lower()) - ord('a')
-    if ((move[0], x, y, number) not in board):
+def parseMove(move, index, kos):
+    player, x, y = move
+    if (("black", x, y) in kifu[0:index-1]):
+        kos.append((player, index, "black", kifu.index(("black", x, y))))
+    elif (("white", x, y) in kifu[0:index-1]):
+        kos.append((player, index, "white", kifu.index(("white", x, y))))
     else:
-        on = played.index((move[0], cx, cy))
-        renderBelow(move, number, on)
-    return(move[0], cx, cy)
+        renderToBoard(player, x, y, index)
 
 if __name__ == "__main__":
     with open(sys.argv[2], 'w') as svg:
         with open(sys.argv[1], 'r') as sgf:
-            svg.write('<svg width="380" height="380" xmlns="http://www.w3.org/2000/svg">\n')
+            svg.write('<svg width="380" height="500" xmlns="http://www.w3.org/2000/svg">\n')
             played = []
             kifu = parseSgf(sgf)
-            board = []
             kos = []
-            for move, index in enumerate(kifu):
-                parseMove(move, index, board, kos)
-            for move, index in enumerate(board):
-                renderBoard(board)
-            for move, index in enumerate(kos):
-                renderKos(kos)
+            for index, move in enumerate(kifu):
+                parseMove(move, index + 1, kos)
+            for index, move in enumerate(kos):
+                renderKos(move, index)
             svg.write('</svg>')
