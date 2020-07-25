@@ -1,3 +1,6 @@
 sgf2kifu
 ---
 usage: `python3 sgf2kifu <kifu> <output>`
+
+
+edit: ???? why did i name it "sgf2kifu"???? it does the opposite?????
